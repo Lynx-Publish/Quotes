@@ -1,0 +1,44 @@
+import mpmath
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parameters for the torus
+R = 3  # Major radius of the torus
+r = 1  # Minor radius of the torus
+n_points = 500  # Number of points
+
+# Define the complex domain for s
+real_parts = np.linspace(1.1, 3, n_points)  # Real part of s
+imaginary_parts = np.linspace(-10, 10, n_points)  # Imaginary part of s
+
+# Compute Riemann zeta values over the domain
+s_vals = [mpmath.mpc(re, im) for re, im in zip(real_parts, imaginary_parts)]
+zeta_vals = [mpmath.zeta(s) for s in s_vals]
+
+# Extract real and imaginary parts of zeta(s)
+zeta_real = np.array([mpmath.re(z) for z in zeta_vals], dtype=float)
+zeta_imag = np.array([mpmath.im(z) for z in zeta_vals], dtype=float)
+
+# Map the zeta function's values onto a torus
+theta = 2 * np.pi * ((zeta_real % 1) / 1)  # Map real part to major angle
+phi = 2 * np.pi * ((zeta_imag % 1) / 1)  # Map imaginary part to minor angle
+
+# Convert toroidal coordinates to Cartesian coordinates
+X = (R + r * np.cos(phi)) * np.cos(theta)
+Y = (R + r * np.cos(phi)) * np.sin(theta)
+Z = r * np.sin(phi)
+
+# Plot the toroidal system
+fig = plt.figure(figsize=(12, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+# Plot the looping function geometry
+ax.plot(X, Y, Z, color="purple", lw=2, label="Looping Geometry of $\zeta(s)$")
+
+# Enhancements for visualization
+ax.set_title("Riemann Zeta Function on a Finite Torus", fontsize=14)
+ax.set_xlabel("X-axis")
+ax.set_ylabel("Y-axis")
+ax.set_zlabel("Z-axis")
+ax.legend()
+plt.show()
