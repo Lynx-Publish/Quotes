@@ -1,0 +1,92 @@
+import numpy as np
+import plotly.graph_objects as go
+from mpmath import zeta
+
+# Define a grid in the complex plane for Re(s) and Im(s)
+sigma = np.linspace(0.1, 2, 100)  # Real part
+t = np.linspace(-30, 30, 100)  # Imaginary part
+Sigma, T = np.meshgrid(sigma, t)  # Create meshgrid for the complex plane
+
+# Initialize empty arrays for the transformed grid (geometry)
+X = np.zeros_like(Sigma)
+Y = np.zeros_like(Sigma)
+Z = np.zeros_like(Sigma)
+
+# Loop over the grid and apply the Riemann zeta function
+for i in range(len(sigma)):
+    for j in range(len(t)):
+        s = Sigma[i, j] + 1j * T[i, j]  # Create the complex number s
+        zeta_val = zeta(s)  # Apply the Riemann zeta function
+
+        # Convert the mpmath zeta output to float for compatibility with NumPy
+        real_zeta = float(zeta_val.real)
+        imag_zeta = float(zeta_val.imag)
+
+        # Directly map the real and imaginary parts without transformation
+        X[i, j] = real_zeta  # Direct mapping of real part
+        Y[i, j] = imag_zeta  # Direct mapping of imaginary part
+
+        Z[i, j] = abs(zeta_val)  # Using the magnitude for height
+
+# Test points for comparison between geometry and the standard Riemann zeta function
+test_points = [
+    0.5 + 14j,  # Complex point 1
+    1.5 + 10j,  # Complex point 2
+    2 + 2j,  # Complex point 3
+    1 + 1j,  # Complex point 4
+    0.1 + 0.5j  # Complex point 5
+]
+
+# Store the results for comparison
+geometry_results = []
+zeta_results = []
+
+for point in test_points:
+    # Evaluate the standard zeta function
+    zeta_val = zeta(point)
+    standard_zeta = zeta_val.real + 1j * zeta_val.imag
+
+    # Convert the mpmath zeta output to float for geometry mapping
+    real_zeta = float(zeta_val.real)
+    imag_zeta = float(zeta_val.imag)
+
+    # Apply the direct geometry mapping (no transformation)
+    geometry_value = real_zeta + 1j * imag_zeta
+
+    # Store the results
+    geometry_results.append(geometry_value)
+    zeta_results.append(standard_zeta)
+
+# Print the comparison results for the test points
+print("Comparison of Geometry vs. Standard Zeta Function:\n")
+for i, point in enumerate(test_points):
+    print(f"Point: {point}")
+    print(f"Standard Zeta: {zeta_results[i]}")
+    print(f"Geometry Approximation: {geometry_results[i]}")
+    print(f"Difference: {abs(zeta_results[i] - geometry_results[i])}\n")
+
+# Create the 3D surface plot using Plotly
+fig = go.Figure(data=[go.Surface(
+    x=X,  # X-axis: transformed real part
+    y=Y,  # Y-axis: transformed imaginary part
+    z=Z,  # Z-axis: magnitude (height) for the warped geometry
+    colorscale='Viridis',  # Use a color scale for visualization
+    colorbar=dict(title="Magnitude of Zeta Function")
+)])
+
+# Customize the layout with labels and title
+fig.update_layout(
+    title='Geometric Transformation of the Riemann Zeta Function (1-to-1 Mapping)',
+    scene=dict(
+        xaxis_title='Real Part',
+        yaxis_title='Imaginary Part',
+        zaxis_title='Magnitude of Zeta Function'
+    ),
+    width=800, height=800
+)
+
+# Show the interactive plot
+fig.show()
+
+
+#This creates a geometric version of the reihhman  zeta.
